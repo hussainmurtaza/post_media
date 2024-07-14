@@ -1,9 +1,8 @@
 const express = require("express");
-const { createPost, getAllPost } = require("../controller/post.controller");
+const { createComment } = require("../controller/comment.controller");
 const verifyToken = require("../middleware/auth.middleware");
 const router = express.Router();
 
-router.get("/", getAllPost);
-router.post("/", verifyToken, createPost);
+router.post("/:post_id", verifyToken, createComment);
 
 module.exports = router;
