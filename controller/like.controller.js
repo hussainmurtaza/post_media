@@ -26,12 +26,10 @@ async function createLike(req, res) {
       { new: true, useFindAndModify: false }
     );
   }
-  const updatedPost = await Post.findOne({ _id: post_id })
-    .populate({
-      path: "comments",
-      populate: { path: "user_id", select: "username" },
-    })
-    .populate("likes", "username");
+  const updatedPost = await Post.findOne({ _id: post_id }).populate(
+    "likes",
+    "username"
+  );
   return res
     .status(STATUS_CODES.CREATED)
     .send(

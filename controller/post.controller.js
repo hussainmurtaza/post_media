@@ -34,6 +34,9 @@ async function createPost(req, res) {
 
 async function getAllPost(req, res) {
   try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skip = (page - 1) * limit;
     const findAllPost = await Post.find()
       .populate("user_id", "username") // Populate user_id with username
       .populate({
@@ -43,17 +46,19 @@ async function getAllPost(req, res) {
           select: "username",
         },
       })
-      .populate("likes", "username");
+      .populate("likes", "username")
+      .skip(skip)
+      .limit(limit);
+    const totalPosts = await Post.countDocuments();
     if (findAllPost) {
-      return res
-        .status(STATUS_CODES.SUCCESS)
-        .send(
-          resSuccess(
-            SUCCESS_CONSTANT.POST_GET,
-            STATUS_CODES.SUCCESS,
-            findAllPost
-          )
-        );
+      return res.status(STATUS_CODES.SUCCESS).send(
+        resSuccess(SUCCESS_CONSTANT.POST_GET, STATUS_CODES.SUCCESS, {
+          count: totalPosts,
+          limit,
+          page,
+          findAllPost,
+        })
+      );
     } else {
       return res
         .status(STATUS_CODES.SUCCESS)
@@ -70,4 +75,49 @@ async function getAllPost(req, res) {
   }
 }
 
-module.exports = { createPost, getAllPost };
+async function getPostByUser(req, res) {
+  const { user_id } = req.params;
+  console.log("user id", user_id);
+  try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skip = (page - 1) * limit;
+    const findAllPost = await Post.find({ user_id })
+      .populate("user_id", "username") // Populate user_id with username
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user_id",
+          select: "username",
+        },
+      })
+      .populate("likes", "username")
+      .skip(skip)
+      .limit(limit);
+    const totalPosts = await Post.countDocuments({ user_id });
+    if (findAllPost) {
+      return res.status(STATUS_CODES.SUCCESS).send(
+        resSuccess(SUCCESS_CONSTANT.POST_GET, STATUS_CODES.SUCCESS, {
+          count: totalPosts,
+          limit,
+          page,
+          findAllPost,
+        })
+      );
+    } else {
+      return res
+        .status(STATUS_CODES.SUCCESS)
+        .send(
+          resSuccess(
+            ERROR_CONSTANT.POST_ID_INVALID,
+            STATUS_CODES.SUCCESS,
+            findAllPost
+          )
+        );
+    }
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+module.exports = { createPost, getAllPost, getPostByUser };

@@ -16,7 +16,11 @@ const ERROR_CONSTANT = {
   INVALID_TOKEN: "Invalid token",
   CONTENT_REQUIRED: "Content is required",
   POST_ID_REQUIRED: "Post id is required",
+  COMMENT_ID_REQUIRED: "Comment id is required",
+  COMMENT_ID_INVALID: "No comment found",
   POST_ID_INVALID: "No post found",
+  REFRESH_TOKEN_REQUIRED: "Refresh token is required",
+  INVALID_REFRESH_TOKEN: "Invalid refresh token",
 };
 
 module.exports = ERROR_CONSTANT;

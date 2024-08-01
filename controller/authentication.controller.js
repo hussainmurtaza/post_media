@@ -1,10 +1,12 @@
 const RegistrationValidation = require("../validator/registration.validator");
 const LoginValidation = require("../validator/login.validator");
+const RefreshTokenValidation = require("../validator/refreshToken.validator");
 const { resError, resSuccess } = require("../utils/response");
 const STATUS_CODES = require("../constant/statusCode.constant");
 const User = require("../model/user.model");
 const ERROR_CONSTANT = require("../constant/error.constant");
 const SUCCESS_CONSTANT = require("../constant/success.constant");
+const generateToken = require("../utils/generateToken");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -78,18 +80,13 @@ async function login(req, res) {
           email: findUser.email,
           date_of_birth: findUser.date_of_birth,
         };
-        const token = jwt.sign(
-          { user: decodeData },
-          process.env.JWT_SECRET_KEY,
-          { expiresIn: "1d" }
+        const { access_token, refresh_token } = generateToken(decodeData);
+        return res.status(STATUS_CODES.SUCCESS).send(
+          resSuccess(SUCCESS_CONSTANT.USER_LOGGEDIN, STATUS_CODES.SUCCESS, {
+            access_token,
+            refresh_token,
+          })
         );
-        return res
-          .status(STATUS_CODES.SUCCESS)
-          .send(
-            resSuccess(SUCCESS_CONSTANT.USER_LOGGEDIN, STATUS_CODES.SUCCESS, {
-              token,
-            })
-          );
       } else {
         return res
           .status(STATUS_CODES.UNAUTHORIZED)
@@ -105,4 +102,37 @@ async function login(req, res) {
   } catch (err) {}
 }
 
-module.exports = { register, login };
+async function refreshToken(req, res) {
+  const validationResponse = RefreshTokenValidation(req.body);
+  if (validationResponse.status) {
+    return res
+      .status(STATUS_CODES.BAD_REQUEST)
+      .send(resError(validationResponse.error, STATUS_CODES.BAD_REQUEST));
+  }
+  const { refresh_token } = req.body;
+  jwt.verify(
+    refresh_token,
+    process.env.REFRESH_TOKEN_SECRET_KEY,
+    (err, decoded) => {
+      if (err) {
+        return res
+          .status(STATUS_CODES.UNAUTHORIZED)
+          .send(
+            resError(
+              ERROR_CONSTANT.INVALID_REFRESH_TOKEN,
+              STATUS_CODES.UNAUTHORIZED
+            )
+          );
+      }
+      const { access_token, refresh_token } = generateToken(decoded.user);
+      return res.status(STATUS_CODES.SUCCESS).send(
+        resSuccess(SUCCESS_CONSTANT.TOKEN_REFRESH, STATUS_CODES.SUCCESS, {
+          access_token,
+          refresh_token,
+        })
+      );
+    }
+  );
+}
+
+module.exports = { register, login, refreshToken };

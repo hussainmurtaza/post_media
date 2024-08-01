@@ -1,4 +1,4 @@
-function resSuccess(message, status, data) {
+function resSuccess(message, status, data={}) {
   return {
     message,
     isSuccess: true,

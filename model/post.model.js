@@ -18,6 +18,13 @@ const postSchema = mongoose.Schema({
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
-
+postSchema.pre("remove", async function (next) {
+  try {
+    await this.model("Comment").deleteMany({ _id: { $in: this.comments } });
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 const Post = mongoose.model("post", postSchema);
 module.exports = Post;

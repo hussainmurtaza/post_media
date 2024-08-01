@@ -16,7 +16,7 @@ const verifyToken = (req, res, next) => {
       .status(STATUS_CODES.UNAUTHORIZED)
       .send(resError(ERROR_CONSTANT.INVALID_TOKEN, STATUS_CODES.UNAUTHORIZED));
   }
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, (err, decoded) => {
     if (err) {
       return res
         .status(STATUS_CODES.UNAUTHORIZED)

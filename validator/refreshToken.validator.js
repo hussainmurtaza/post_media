@@ -1,16 +1,16 @@
 const ERROR_CONSTANT = require("../constant/error.constant");
 
-const commentValidator = (body) => {
+const refreshTokeValidator = (body) => {
   let error = {
     status: false,
     error: "",
   };
-  if (!body.content) {
-    error.error = ERROR_CONSTANT.CONTENT_REQUIRED;
+  if (!body.refresh_token) {
+    error.error = ERROR_CONSTANT.REFRESH_TOKEN_REQUIRED;
     error.status = true;
     return error;
   }
   return error;
 };
 
-module.exports = commentValidator;
+module.exports = refreshTokeValidator;
